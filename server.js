@@ -17,7 +17,7 @@ const db = knex({
   });
 
 db.select('*').from('users').then(data => {
-    console.log(data);
+    //console.log(data);
 })
 
 const app = express();
@@ -72,27 +72,30 @@ app.post('/register', (req, res) => {
     const { email, name, password} = req.body;
     // bcrypt.hash(password, null, null, function(err, hash) {
     //     console.log(hash)    
-    db('users').insert({
+    db('users')
+    .returning('*')
+    .insert({
         email: email,
         name: name,
         joined: new Date()
-    }).then(response => {
-        res.json(database.users[database.users.length - 1])
+    }).then(user => {
+        res.json(user[0]);
     })
+    .catch(err => res.status(404).json('unable to register'));
 });
 
 app.get('/profile/:id', (req, res) => {
     const { id } = req.params;
     let found = false;
-    database.users.forEach(user => {
-        if (user.id === id) {
-            found = true;
-            return res.json(user);
-        } 
+    db.select('*').from('users').where({id})
+    .then(user => {
+        if (user.length) {
+            res.json(user[0]);
+        } else {
+            res.status(400).json('Not Found')
+        }
     })
-    if (!found) {
-        res.status(400).json('not found');
-    }
+    .catch(err => res.status(400).json('Error getting user'))
 });
 
 app.put('/image', (req, res) => {
@@ -110,8 +113,8 @@ app.put('/image', (req, res) => {
     }
 });
 
-app.listen(3001, () => {
-    console.log('app is running on port 3001!');
+app.listen(3000, () => {
+    console.log('app is running on port 3000!');
 });
 
 /*
