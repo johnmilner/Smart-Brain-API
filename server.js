@@ -59,7 +59,10 @@ app.get('/', (req, res) => {
 });
 
 app.post('/signin', (req, res) => {
-    
+    db.select('email', 'hash').from('login')
+    .then(data => {
+        console.log(data);
+    })
 });
 
 app.post('/register', (req, res) => {
